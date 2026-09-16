@@ -1,0 +1,22 @@
+# Generated profiler data
+results/
+perfetto-traces/
+*.nsys-rep
+*.ncu-rep
+*.qdrep
+*.qdstrm
+*.sqlite
+*.jsonl
+
+# Local environments and tool installations
+.venv/
+cuda-compat-*/
+nsight-compute-*/
+nsight-systems-*/
+nsight-gui-*/
+novnc-*/
+
+# Local process and installation logs
+*.log
+*.pid
+*.status
