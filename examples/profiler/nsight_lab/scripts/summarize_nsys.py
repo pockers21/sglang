@@ -8,17 +8,28 @@ from pathlib import Path
 MODES = ("prefill-disabled", "decode-disabled", "decode-full")
 
 
-def load_csv(path: Path, header_prefix: str):
+def load_csv(path: Path, header_prefix: str, required=True):
+    if not path.exists():
+        if required:
+            raise FileNotFoundError(path)
+        return []
     lines = path.read_text(encoding="utf-8").splitlines()
-    start = next(
-        index for index, line in enumerate(lines) if line.startswith(header_prefix)
-    )
+    try:
+        start = next(
+            index for index, line in enumerate(lines) if line.startswith(header_prefix)
+        )
+    except StopIteration:
+        if required:
+            raise ValueError(f"Cannot find {header_prefix!r} header in {path}")
+        return []
     return list(csv.DictReader(lines[start:]))
 
 
 def summarize_mode(root: Path, mode: str):
     kernel_rows = load_csv(root / mode / "cuda_gpu_kern_sum.csv", "Time (%)")
     api_rows = load_csv(root / mode / "cuda_api_sum.csv", "Time (%)")
+    memory_path = root / mode / "cuda_gpu_mem_time_sum.csv"
+    memory_rows = load_csv(memory_path, "Time (%)", required=False)
     api = {row["Name"]: row for row in api_rows}
 
     ordinary_launches = {
@@ -47,6 +58,19 @@ def summarize_mode(root: Path, mode: str):
         )
         / 1e6,
         "gpu_kernel_instances": sum(int(row["Instances"]) for row in kernel_rows),
+        "gpu_memory_operation_time_ms": sum(
+            int(row["Total Time (ns)"]) for row in memory_rows
+        )
+        / 1e6,
+        "gpu_memory_operations": sum(
+            int(
+                row.get(
+                    "Operations",
+                    row.get("Instances", row.get("Count", 0)),
+                )
+            )
+            for row in memory_rows
+        ),
         "ordinary_launch_calls": ordinary_calls,
         "ordinary_launch_api_time_ms": ordinary_time_ns / 1e6,
         "graph_launch_calls": graph_calls,
@@ -83,14 +107,15 @@ def main():
     lines = [
         "# Nsight Systems Summary",
         "",
-        "| Capture | GPU kernel time | Kernel instances | Ordinary launches | Graph launches |",
-        "|---|---:|---:|---:|---:|",
+        "| Capture | GPU kernel time | Explicit GPU memory ops | Kernel instances | Ordinary launches | Graph launches |",
+        "|---|---:|---:|---:|---:|---:|",
     ]
     for mode in MODES:
         data = summary[mode]
         lines.append(
             f"| `{mode}` | {data['gpu_kernel_time_ms']:.3f} ms | "
-            f"{data['gpu_kernel_instances']} | {data['ordinary_launch_calls']} | "
+            f"{data['gpu_memory_operation_time_ms']:.3f} ms | {data['gpu_kernel_instances']} | "
+            f"{data['ordinary_launch_calls']} | "
             f"{data['graph_launch_calls']} |"
         )
     comparison = summary["decode_comparison"]

@@ -1,201 +1,195 @@
-# SGLang Nsight Profiling Lab
+# SGLang Performance Engineering Lab
 
-This lab provides a reproducible workflow for profiling SGLang inference with
-NVIDIA Nsight Systems and Nsight Compute. It is designed as a compact
-performance case study: isolate a meaningful inference window, identify hot
-kernels, attribute overhead, form an optimization hypothesis, and validate it
-with an A/B experiment.
+This repository-local lab automates an end-to-end SGLang performance
+investigation. It starts with reproducible latency and serving measurements,
+narrows the problem with Nsight Systems, selects one important kernel for
+Nsight Compute, validates an optimization with an A/B experiment, and produces
+a diagnosis whose claims are bounded by the evidence collected.
 
-The lab lives inside the SGLang source tree at:
+The lab is model- and machine-agnostic. The checked-in case study uses Qwen3-8B
+BF16 on an NVIDIA H200, but machine paths and workload choices are runtime
+configuration.
 
-```text
-examples/profiler/nsight_lab
-```
+## What Complete Means
 
-Generated profiler reports and locally installed tools are intentionally not
-tracked by Git.
+| Layer | Question | Tool/output |
+|---|---|---|
+| Environment | What code, model, CUDA stack, and GPU produced this result? | `environment.txt`, `configuration.txt` |
+| Offline baseline | How do prefill/decode change with batch and sequence shape? | `one_batch`, `offline/summary.md` |
+| Online serving | Where do throughput and tail latency saturate? | SGLang HTTP server, `serving/summary.md` |
+| Stage diagnosis | Which stages, kernels, APIs, and launches consume time? | bounded NSYS captures |
+| Kernel diagnosis | Is a selected hot kernel compute-, memory-, or scheduler-limited? | targeted NCU report |
 
-## What To Read First
+The CUDA Graph case study closes the optimization loop: measure without a
+profiler, explain with paired traces, and only then state why it improved.
 
-```text
-reports/006_qwen3_8b_cuda_graph_ab.md
-reports/005_clean_metrics_dashboard.md
-scripts/profile_stage_nsys.sh
-scripts/profile_kernel_ncu.sh
-scripts/run_full_study.sh
-python/sglang/benchmark/one_batch.py
-```
+## Start Here
 
-The case study shows why capture boundaries matter:
+Read these in order:
 
-1. Whole-process profiling included model loading, KV-cache initialization,
-   warmup, and shutdown, which obscured steady-state inference behavior.
-2. Clean prefill and decode captures use SGLang's CUDA profiler controls with
-   the Nsight Systems `cudaProfilerApi` capture range.
-3. The clean batch-1 decode trace contains many short kernels and visible
-   launch/API overhead, while explicit CUDA memory operations are small.
-4. The complete runner performs an unprofiled CUDA Graph on/off A/B test,
-   followed by paired Nsight Systems captures that explain the timing result.
+1. `docs/learning_path.md`
+2. `docs/metrics.md`
+3. `docs/decision_tree.md`
+4. `reports/006_qwen3_8b_cuda_graph_ab.md`
+5. `reports/007_qwen3_8b_complete_perf_lab.md`
+6. `docs/interview_playbook.md`
 
-## Requirements
-
-- A CUDA-capable system supported by SGLang.
-- A working SGLang development environment for this checkout.
-- `nsys` for stage-level analysis.
-- `ncu` for optional single-kernel analysis.
-- A local model checkpoint or a model identifier accepted by SGLang.
-
-Set `VENV_PATH` if the environment is not already active. Set `NSYS` or `NCU`
-when the tools are not available on `PATH`. If a driver compatibility package
-is required in a container, set `CUDA_COMPAT_DIR` to its library directory.
-
-## Quick Start
-
-From the repository root:
+Run repository checks without a GPU:
 
 ```bash
 cd examples/profiler/nsight_lab
+make check
+```
+
+## Complete Run
+
+Load a machine-local configuration based on
+`configs/qwen3_8b_h200.env.example`, then run:
+
+```bash
+source /path/to/local-lab.env
+cd examples/profiler/nsight_lab
+LAB_RUN_ROOT=/path/to/results/qwen3-8b-h200 \
+  make complete MODEL_PATH="$MODEL_PATH"
+```
+
+`CUDA_VISIBLE_DEVICES` is resolved where the process starts. If a container is
+launched with physical GPU 2 as its only visible device, use
+`CUDA_VISIBLE_DEVICES=0` inside that container.
+
+The complete run performs:
+
+1. Unprofiled, interleaved CUDA Graph disabled/full A/B trials.
+2. Bounded prefill, eager-decode, and graph-decode NSYS captures.
+3. A Cartesian offline batch/input/output sweep in one model-loading process.
+4. A real SGLang server lifecycle and HTTP concurrency sweep.
+5. Hot-kernel selection from NSYS, a one-launch NCU capture, and a compact
+   SpeedOfLight summary. The report also collects memory workload, scheduler,
+   warp-state, source-counter, occupancy, and instruction sections for deeper
+   inspection.
+6. Evidence-based diagnosis and a machine-readable completion status.
+
+Expected output layout:
+
+```text
+complete-<timestamp>/
+  status.json
+  core-study/
+    environment.txt
+    configuration.txt
+    ab/summary.{json,md}
+    nsys_summary.{json,md}
+    nsys/{prefill-disabled,decode-disabled,decode-full}/
+  offline/{results.jsonl,summary.json,summary.md}
+  serving/{server.log,results.jsonl,summary.json,summary.md}
+  ncu/{target.json,summary.json,summary.md,selected-hot-kernel/sglang_one_batch_ncu.ncu-rep}
+  diagnosis.{json,md}
+```
+
+`status.json` is `RUNNING`, `FAILED`, or `COMPLETE` and records the last stage.
+Large profiler binaries and raw generated results are ignored by Git.
+
+Resume an interrupted run without repeating stages that already produced a
+valid summary:
+
+```bash
+RESUME=1 LAB_RUN_ROOT=/path/to/existing/results \
+  make complete MODEL_PATH="$MODEL_PATH"
+```
+
+The serving runner defaults to SGLang's `random-ids` dataset with tokenized
+prompts. It therefore needs no ShareGPT download and remains reproducible on an
+offline benchmark host.
+
+## Focused Runs
+
+Environment check:
+
+```bash
 VENV_PATH=/path/to/venv bash scripts/check_environment.sh
 ```
 
-Profile a bounded decode window:
+Offline shape sweep:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 \
-INPUT_LEN=256 OUTPUT_LEN=64 PROFILE_START_STEP=16 PROFILE_STEPS=8 \
-bash scripts/profile_stage_nsys.sh decode /path/to/model
+BATCH_SIZES="1 4 16" INPUT_LENS="128 512 2048" OUTPUT_LENS="32 128" \
+  bash scripts/run_offline_sweep.sh /path/to/model
 ```
 
-Profile prefill:
+Real serving sweep:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 INPUT_LEN=256 OUTPUT_LEN=64 \
-bash scripts/profile_stage_nsys.sh prefill /path/to/model
+CONCURRENCIES="1 8 32" NUM_PROMPTS=64 \
+RANDOM_INPUT_LEN=256 RANDOM_OUTPUT_LEN=64 \
+  bash scripts/run_serving_sweep.sh /path/to/model
 ```
 
-The generated files are written under `results/` by default:
-
-```text
-results/decode-disabled/clean_decode.nsys-rep
-results/decode-disabled/cuda_gpu_kern_sum.txt
-results/decode-disabled/cuda_api_sum.txt
-results/decode-disabled/cuda_gpu_mem_time_sum.txt
-results/decode-disabled/cuda_kern_exec_trace_nvtx.txt
-```
-
-Set `OUTPUT_ROOT` to place the generated files elsewhere.
-
-## Complete CUDA Graph Study
-
-Run the full workflow on an otherwise idle GPU:
+CUDA Graph A/B and NSYS only:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 \
-VENV_PATH=/path/to/venv \
-SGLANG_REPO_ROOT=/path/to/sglang \
-NSYS=/path/to/nsys NCU=/path/to/ncu \
-STUDY_ROOT=/path/to/output/qwen3-8b-cuda-graph \
-REPEATS=5 WARMUP_RUNS=1 \
-INPUT_LEN=256 OUTPUT_LEN=128 \
-PROFILE_START_STEP=32 PROFILE_STEPS=16 \
-bash scripts/run_full_study.sh /path/to/model
+STUDY_ROOT=/path/to/results/core \
+INPUT_LEN=256 OUTPUT_LEN=128 PROFILE_START_STEP=32 PROFILE_STEPS=16 \
+  bash scripts/run_full_study.sh /path/to/model
 ```
 
-The workflow deliberately separates measurement from diagnosis:
-
-1. `run_cuda_graph_ab.sh` runs unprofiled, interleaved `disabled` and `full`
-   decode trials. It reports the median, mean, standard deviation, throughput,
-   speedup, and latency reduction.
-2. `profile_stage_nsys.sh` captures representative prefill, eager decode, and
-   CUDA Graph decode windows. Profiler-instrumented latency is not used as the
-   performance result.
-3. `profile_kernel_ncu.sh` remains an optional targeted follow-up after a hot
-   kernel has been selected from the Nsight Systems evidence.
-
-The study directory contains:
-
-```text
-environment.txt
-configuration.txt
-ab/disabled.jsonl
-ab/full.jsonl
-ab/summary.json
-ab/summary.md
-nsys/prefill-disabled/
-nsys/decode-disabled/
-nsys/decode-full/
-nsys_summary.json
-nsys_summary.md
-```
-
-Each Nsight directory contains the binary report plus text and CSV exports for
-CUDA kernels and API calls. Keep the large binary reports outside Git; commit
-only compact, reviewed evidence needed by a written report.
-
-## Kernel Deep Dive
-
-Use Nsight Compute only after Nsight Systems has identified a kernel worth
-investigating:
+Target the hottest kernel from a prior eager-decode capture:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 \
-KERNEL_NAME='regex:nvjet_sm90_tst_256x8.*' \
-LAUNCH_SKIP=40 LAUNCH_COUNT=1 \
-bash scripts/profile_kernel_ncu.sh /path/to/model
+OUTPUT_ROOT=/path/to/results/ncu \
+  bash scripts/profile_selected_kernel_ncu.sh /path/to/model \
+  /path/to/decode-disabled/cuda_gpu_kern_sum.csv
 ```
 
-The output includes an `.ncu-rep` file and a text export of the details page.
-The exact kernel name and launch index depend on the model, batch size, SGLang
-revision, and CUDA stack.
+Set `RUN_NCU=0` when NCU is unavailable. The final diagnosis will explicitly
+report compute-versus-memory classification as unknown instead of guessing.
+
+## Measurement Rules
+
+- Report latency from unprofiled runs. Profiler traces explain results; they do
+  not replace timing runs.
+- Capture a bounded, named stage. Whole-process traces mix loading, warmup,
+  allocation, inference, and shutdown.
+- Use NSYS before NCU. NCU replay is expensive and should target one kernel
+  selected from stage-level evidence.
+- Quote tail latency with throughput. Maximum throughput alone is not a serving
+  capacity target.
+- Treat every result as specific to its model, revision, shape, hardware, and
+  software stack.
 
 ## Configuration
 
-The scripts accept configuration through environment variables:
+The primary variables are documented in
+`configs/qwen3_8b_h200.env.example`. Useful overrides include:
 
 | Variable | Default | Purpose |
 |---|---:|---|
-| `CUDA_VISIBLE_DEVICES` | `0` | GPU visible to the benchmark |
-| `BATCH_SIZE` | `1` | Benchmark batch size |
-| `INPUT_LEN` | `256` for NSYS | Input sequence length |
-| `OUTPUT_LEN` | `64` for NSYS | Generated token count |
-| `PROFILE_START_STEP` | `16` | First decode step to capture |
-| `PROFILE_STEPS` | `8` | Number of decode steps to capture |
-| `CUDA_GRAPH_BACKEND_DECODE` | `disabled` | Decode CUDA Graph backend |
-| `CUDA_GRAPH_BACKEND_PREFILL` | `disabled` | Prefill CUDA Graph backend |
-| `CUDA_GRAPH_BS_DECODE` | `1` | Batch size captured by decode CUDA Graph |
-| `REPEATS` | `5` | Timed trials per A/B mode |
-| `WARMUP_RUNS` | `1` | Untimed process-level warmup pairs |
-| `VENV_PATH` | unset | Optional Python virtual environment |
-| `NSYS` | `nsys` from `PATH` | Nsight Systems executable |
-| `NCU` | `ncu` from `PATH` | Nsight Compute executable |
-| `OUTPUT_ROOT` | `results/` | Generated report directory |
-| `RUN_NAME` | stage and graph mode | Per-capture output directory name |
-| `STUDY_ROOT` | timestamped directory | Full-study output directory |
-| `CUDA_PYTHON_LIB_DIR` | auto-detected | CUDA wheel runtime library directory |
+| `CUDA_VISIBLE_DEVICES` | `0` | GPU visible to the process |
+| `VENV_PATH` | unset | Python environment containing SGLang dependencies |
+| `NSYS`, `NCU` | from `PATH` | Profiler executables |
+| `NCU_SECTIONS` | five focused sections | Sections collected for the selected launch |
+| `BATCH_SIZES` | `1 4 16` | Offline sweep batch values |
+| `INPUT_LENS` | `128 512 2048` | Offline sweep input lengths |
+| `OUTPUT_LENS` | `32 128` | Offline sweep output lengths |
+| `CONCURRENCIES` | `1 8 32` | Online maximum concurrency values |
+| `NUM_PROMPTS` | `64` | Requests per online point |
+| `SLO_P99_TTFT_MS` | `1000` | TTFT threshold for capacity classification |
+| `SLO_P99_TPOT_MS` | `100` | TPOT threshold for capacity classification |
+| `RUN_NCU` | `1` | Run the targeted NCU stage |
 
-## Reports
+## Proven Case Studies
 
-The historical reports record one H200/Qwen2-style 3B model investigation.
-Measured numbers are evidence for that environment, not universal SGLang
-performance claims. Re-run the complete workflow on the target model, SGLang
-revision, CUDA stack, and otherwise idle hardware before drawing conclusions.
+The checked-in Qwen3-8B/H200 case study measured batch-1 decode at 10.888 ms
+with ordinary launches and 5.215 ms with full CUDA Graph replay: 2.088x faster.
+Paired NSYS captures showed 8,368 ordinary launches in the eager window versus
+144 ordinary plus 16 graph launches in the graph window, while total GPU kernel
+time remained nearly unchanged. That combination supports a host-launch
+overhead diagnosis; the speedup is not attributed to doing less model math.
 
-The latest result is in `reports/006_qwen3_8b_cuda_graph_ab.md`. It closes the
-experiment proposed by `reports/005_clean_metrics_dashboard.md`: CUDA Graph
-replay cuts batch-1 decode latency while leaving the amount of GPU kernel work
-nearly unchanged, because thousands of ordinary host launch calls are folded
-into one graph replay per decode step.
+See `reports/006_qwen3_8b_cuda_graph_ab.md` for the full claim and its limits.
 
-## Profiling Method
-
-Use Nsight Systems first to answer broad questions:
-
-- Which stage is slow?
-- Which kernel families dominate GPU time?
-- How many launches occur?
-- Is explicit copy/memset time material?
-- Is launch overhead worth investigating?
-
-Use Nsight Compute second, on one selected kernel, to inspect compute, memory,
-cache, occupancy, scheduler, and warp-level metrics. A single NCU result must
-not be generalized into a whole-model bottleneck without stage-level evidence.
+The end-to-end `007` case study adds the 18-point offline sweep, a real serving
+concurrency sweep, hot-kernel selection, and a successful targeted NCU replay.
+Its formal run measured a 2.682x batch-1 decode speedup, 34,406.8 tok/s at the
+best measured offline point, 2,295.1 output tok/s at the highest tested
+SLO-compliant serving point, and a memory-throughput-dominant signal for one
+selected `nvjet` launch. See `reports/007_qwen3_8b_complete_perf_lab.md`.

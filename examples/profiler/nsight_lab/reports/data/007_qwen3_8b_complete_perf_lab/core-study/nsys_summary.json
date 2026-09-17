@@ -1,0 +1,36 @@
+{
+  "prefill-disabled": {
+    "gpu_kernel_time_ms": 7.208471,
+    "gpu_kernel_instances": 524,
+    "gpu_memory_operation_time_ms": 0.012832,
+    "gpu_memory_operations": 16,
+    "ordinary_launch_calls": 524,
+    "ordinary_launch_api_time_ms": 3.313779,
+    "graph_launch_calls": 0,
+    "graph_launch_api_time_ms": 0.0
+  },
+  "decode-disabled": {
+    "gpu_kernel_time_ms": 76.949947,
+    "gpu_kernel_instances": 8368,
+    "gpu_memory_operation_time_ms": 0.053888,
+    "gpu_memory_operations": 64,
+    "ordinary_launch_calls": 8368,
+    "ordinary_launch_api_time_ms": 35.76865,
+    "graph_launch_calls": 0,
+    "graph_launch_api_time_ms": 0.0
+  },
+  "decode-full": {
+    "gpu_kernel_time_ms": 78.579321,
+    "gpu_kernel_instances": 8272,
+    "gpu_memory_operation_time_ms": 0.059522,
+    "gpu_memory_operations": 64,
+    "ordinary_launch_calls": 144,
+    "ordinary_launch_api_time_ms": 1.074715,
+    "graph_launch_calls": 16,
+    "graph_launch_api_time_ms": 13.399854
+  },
+  "decode_comparison": {
+    "gpu_kernel_time_change_percent": 2.1174465526272446,
+    "ordinary_launch_call_reduction_percent": 98.2791586998088
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "slo": {
+    "p99_ttft_ms": 1000.0,
+    "p99_tpot_ms": 100.0
+  },
+  "points": [
+    {
+      "max_concurrency": 1,
+      "completed": 64,
+      "request_throughput": 5.518773232325722,
+      "output_throughput": 178.41159090127996,
+      "total_throughput": 909.2178900256627,
+      "p99_e2e_latency_ms": 331.69065409805626,
+      "p99_ttft_ms": 70.55514718871541,
+      "p99_tpot_ms": 5.056939202953469,
+      "slo_pass": true
+    },
+    {
+      "max_concurrency": 8,
+      "completed": 64,
+      "request_throughput": 30.943042753884196,
+      "output_throughput": 1000.3305540279125,
+      "total_throughput": 5097.866293702421,
+      "p99_e2e_latency_ms": 485.32035315409297,
+      "p99_ttft_ms": 48.536376440897584,
+      "p99_tpot_ms": 8.571195486001669,
+      "slo_pass": true
+    },
+    {
+      "max_concurrency": 32,
+      "completed": 64,
+      "request_throughput": 70.99364319245892,
+      "output_throughput": 2295.0913713312107,
+      "total_throughput": 11696.202715957606,
+      "p99_e2e_latency_ms": 696.0940945288166,
+      "p99_ttft_ms": 122.74383860640228,
+      "p99_tpot_ms": 12.66915504284341,
+      "slo_pass": true
+    }
+  ],
+  "best_output_throughput": {
+    "max_concurrency": 32,
+    "completed": 64,
+    "request_throughput": 70.99364319245892,
+    "output_throughput": 2295.0913713312107,
+    "total_throughput": 11696.202715957606,
+    "p99_e2e_latency_ms": 696.0940945288166,
+    "p99_ttft_ms": 122.74383860640228,
+    "p99_tpot_ms": 12.66915504284341,
+    "slo_pass": true
+  },
+  "best_slo_compliant": {
+    "max_concurrency": 32,
+    "completed": 64,
+    "request_throughput": 70.99364319245892,
+    "output_throughput": 2295.0913713312107,
+    "total_throughput": 11696.202715957606,
+    "p99_e2e_latency_ms": 696.0940945288166,
+    "p99_ttft_ms": 122.74383860640228,
+    "p99_tpot_ms": 12.66915504284341,
+    "slo_pass": true
+  },
+  "saturation_signal": null
+}

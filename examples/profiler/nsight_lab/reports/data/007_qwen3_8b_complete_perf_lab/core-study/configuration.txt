@@ -1,0 +1,16 @@
+study_name=20260917T111812Z
+model_path=/mnt/data/ly/unsloth-research/models/hf/Qwen3-8B-BF16
+cuda_visible_devices=0
+batch_size=1
+input_len=256
+output_len=128
+context_length=512
+max_total_tokens=512
+mem_fraction_static=0.30
+dtype=bfloat16
+cuda_graph_backend_prefill=disabled
+cuda_graph_bs_decode=1
+profile_start_step=32
+profile_steps=16
+repeats=5
+warmup_runs=1

@@ -1,0 +1,235 @@
+{
+  "points": [
+    {
+      "batch_size": 1,
+      "input_len": 128,
+      "output_len": 32,
+      "prefill_latency_ms": 12.296818662434816,
+      "prefill_throughput": 10409.196355072176,
+      "decode_latency_ms": 5.143942777067423,
+      "decode_throughput": 194.40340675214568,
+      "total_latency_ms": 172.34598938375711,
+      "overall_throughput": 928.3650903168584
+    },
+    {
+      "batch_size": 1,
+      "input_len": 128,
+      "output_len": 128,
+      "prefill_latency_ms": 12.68070936203003,
+      "prefill_throughput": 10094.072527462196,
+      "decode_latency_ms": 5.135863088071346,
+      "decode_throughput": 194.7092402682266,
+      "total_latency_ms": 665.1564361527562,
+      "overall_throughput": 384.8718678581777
+    },
+    {
+      "batch_size": 1,
+      "input_len": 512,
+      "output_len": 32,
+      "prefill_latency_ms": 19.44697042927146,
+      "prefill_throughput": 26328.008358018622,
+      "decode_latency_ms": 5.155902821570635,
+      "decode_throughput": 193.95245306337475,
+      "total_latency_ms": 179.4868684373796,
+      "overall_throughput": 3030.8623953166457
+    },
+    {
+      "batch_size": 1,
+      "input_len": 512,
+      "output_len": 128,
+      "prefill_latency_ms": 13.288707938045263,
+      "prefill_throughput": 38528.952730923964,
+      "decode_latency_ms": 5.161362700164318,
+      "decode_throughput": 193.74728305146309,
+      "total_latency_ms": 670.1947799883783,
+      "overall_throughput": 954.946262056977
+    },
+    {
+      "batch_size": 1,
+      "input_len": 2048,
+      "output_len": 32,
+      "prefill_latency_ms": 45.30442599207163,
+      "prefill_throughput": 45205.29628514451,
+      "decode_latency_ms": 5.282491911202669,
+      "decode_throughput": 189.30459654453674,
+      "total_latency_ms": 210.96503036096692,
+      "overall_throughput": 9859.45394097336
+    },
+    {
+      "batch_size": 1,
+      "input_len": 2048,
+      "output_len": 128,
+      "prefill_latency_ms": 44.853064231574535,
+      "prefill_throughput": 45660.20259900772,
+      "decode_latency_ms": 5.255159921944141,
+      "decode_throughput": 190.28916623912198,
+      "total_latency_ms": 713.8074189424515,
+      "overall_throughput": 3048.4412773740496
+    },
+    {
+      "batch_size": 4,
+      "input_len": 128,
+      "output_len": 32,
+      "prefill_latency_ms": 13.376267161220312,
+      "prefill_throughput": 38276.74745345699,
+      "decode_latency_ms": 5.339913070201874,
+      "decode_throughput": 749.0758646093055,
+      "total_latency_ms": 180.0653631798923,
+      "overall_throughput": 3554.2648996887597
+    },
+    {
+      "batch_size": 4,
+      "input_len": 128,
+      "output_len": 128,
+      "prefill_latency_ms": 13.204220682382584,
+      "prefill_throughput": 38775.480379779154,
+      "decode_latency_ms": 5.31755480915308,
+      "decode_throughput": 752.2254388642727,
+      "total_latency_ms": 688.9874883927405,
+      "overall_throughput": 1486.2388900396022
+    },
+    {
+      "batch_size": 4,
+      "input_len": 512,
+      "output_len": 32,
+      "prefill_latency_ms": 42.64466278254986,
+      "prefill_throughput": 48024.76714244388,
+      "decode_latency_ms": 5.4163336753845215,
+      "decode_throughput": 738.5069384071926,
+      "total_latency_ms": 210.96083521842957,
+      "overall_throughput": 10314.710774381236
+    },
+    {
+      "batch_size": 4,
+      "input_len": 512,
+      "output_len": 128,
+      "prefill_latency_ms": 42.34240809455514,
+      "prefill_throughput": 48367.584465829066,
+      "decode_latency_ms": 5.397255998104811,
+      "decode_throughput": 741.1173384039145,
+      "total_latency_ms": 729.5610327273607,
+      "overall_throughput": 3508.9593401525326
+    },
+    {
+      "batch_size": 4,
+      "input_len": 2048,
+      "output_len": 32,
+      "prefill_latency_ms": 245.77545933425426,
+      "prefill_throughput": 33331.23665881911,
+      "decode_latency_ms": 5.645630415529013,
+      "decode_throughput": 708.512549634404,
+      "total_latency_ms": 423.8219386897981,
+      "overall_throughput": 19630.885616068917
+    },
+    {
+      "batch_size": 4,
+      "input_len": 2048,
+      "output_len": 128,
+      "prefill_latency_ms": 184.40681509673595,
+      "prefill_throughput": 44423.5208753139,
+      "decode_latency_ms": 5.619974806904793,
+      "decode_throughput": 711.7469628307825,
+      "total_latency_ms": 902.8755342587829,
+      "overall_throughput": 9640.309953847142
+    },
+    {
+      "batch_size": 16,
+      "input_len": 128,
+      "output_len": 32,
+      "prefill_latency_ms": 42.95190516859293,
+      "prefill_throughput": 47681.23769973137,
+      "decode_latency_ms": 5.479521583765745,
+      "decode_throughput": 2919.9629484813827,
+      "total_latency_ms": 214.55635968595743,
+      "overall_throughput": 11931.596918157213
+    },
+    {
+      "batch_size": 16,
+      "input_len": 128,
+      "output_len": 128,
+      "prefill_latency_ms": 42.89998626336455,
+      "prefill_throughput": 47738.943024999,
+      "decode_latency_ms": 5.455317907035351,
+      "decode_throughput": 2932.917984370057,
+      "total_latency_ms": 737.4311797320843,
+      "overall_throughput": 5554.416618901462
+    },
+    {
+      "batch_size": 16,
+      "input_len": 512,
+      "output_len": 32,
+      "prefill_latency_ms": 178.24782291427255,
+      "prefill_throughput": 45958.4855852063,
+      "decode_latency_ms": 5.742243025451899,
+      "decode_throughput": 2786.3676143767607,
+      "total_latency_ms": 356.9970256648958,
+      "overall_throughput": 24381.15551183955
+    },
+    {
+      "batch_size": 16,
+      "input_len": 512,
+      "output_len": 128,
+      "prefill_latency_ms": 178.32386307418346,
+      "prefill_throughput": 45938.88814864949,
+      "decode_latency_ms": 5.7706753723323345,
+      "decode_throughput": 2772.6390704132223,
+      "total_latency_ms": 913.156402297318,
+      "overall_throughput": 11213.851180628224
+    },
+    {
+      "batch_size": 16,
+      "input_len": 2048,
+      "output_len": 32,
+      "prefill_latency_ms": 759.3772709369659,
+      "prefill_throughput": 43151.14667518142,
+      "decode_latency_ms": 6.612231023609638,
+      "decode_throughput": 2419.758163752958,
+      "total_latency_ms": 967.2510582022369,
+      "overall_throughput": 34406.78582647948
+    },
+    {
+      "batch_size": 16,
+      "input_len": 2048,
+      "output_len": 128,
+      "prefill_latency_ms": 764.3067287281156,
+      "prefill_throughput": 42872.83988004305,
+      "decode_latency_ms": 6.588967051357031,
+      "decode_throughput": 2428.301716382801,
+      "total_latency_ms": 1609.7426847554743,
+      "overall_throughput": 21628.301423397166
+    }
+  ],
+  "best_prefill_throughput": {
+    "batch_size": 4,
+    "input_len": 512,
+    "output_len": 128,
+    "prefill_latency_ms": 42.34240809455514,
+    "prefill_throughput": 48367.584465829066,
+    "decode_latency_ms": 5.397255998104811,
+    "decode_throughput": 741.1173384039145,
+    "total_latency_ms": 729.5610327273607,
+    "overall_throughput": 3508.9593401525326
+  },
+  "best_decode_throughput": {
+    "batch_size": 16,
+    "input_len": 128,
+    "output_len": 128,
+    "prefill_latency_ms": 42.89998626336455,
+    "prefill_throughput": 47738.943024999,
+    "decode_latency_ms": 5.455317907035351,
+    "decode_throughput": 2932.917984370057,
+    "total_latency_ms": 737.4311797320843,
+    "overall_throughput": 5554.416618901462
+  },
+  "best_overall_throughput": {
+    "batch_size": 16,
+    "input_len": 2048,
+    "output_len": 32,
+    "prefill_latency_ms": 759.3772709369659,
+    "prefill_throughput": 43151.14667518142,
+    "decode_latency_ms": 6.612231023609638,
+    "decode_throughput": 2419.758163752958,
+    "total_latency_ms": 967.2510582022369,
+    "overall_throughput": 34406.78582647948
+  }
+}

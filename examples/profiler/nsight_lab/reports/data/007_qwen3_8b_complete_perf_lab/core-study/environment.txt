@@ -1,0 +1,18 @@
+timestamp_utc=2026-09-17T11:18:12Z
+hostname=bc004d7cbd87
+kernel=Linux 6.8.0-138-generic x86_64 GNU/Linux
+sglang_repo=/mnt/data/ly/sglang-pr-performance
+sglang_commit=ba764eff04c7262fc71ea7a85a6d90844fa2ab5f
+sglang_branch=fix/one-batch-cuda-profiler-steps
+model_path=/mnt/data/ly/unsloth-research/models/hf/Qwen3-8B-BF16
+model_config_sha256=f7c4eadfbbf522470667b797a3c89be2524832d2d599797248dc304fff447c30
+python=3.10.12
+torch=2.11.0+cu130
+torch_cuda=13.0
+sglang=0.5.14
+sglang_module=/mnt/data/ly/sglang-pr-performance/python/sglang/__init__.py
+0, NVIDIA H200, GPU-4926d512-c0f2-936d-5f7f-e05817194b06, 580.105.08, 143771 MiB, 0 MiB, 0 %
+NVIDIA Nsight Systems version 2024.6.2.225-246235244400v0
+NVIDIA (R) Nsight Compute Command Line Profiler
+Copyright (c) 2018-2025 NVIDIA Corporation
+Version 2025.1.1.0 (build 35528883) (public-release)
