@@ -1,0 +1,17 @@
+Generating SQLite file $STUDY_ROOT/nsys/prefill-disabled/clean_prefill.sqlite from $STUDY_ROOT/nsys/prefill-disabled/clean_prefill.nsys-rep
+Processing [$STUDY_ROOT/nsys/prefill-disabled/clean_prefill.sqlite] with [$TOOL_ROOT/nsight-systems-2024.6.2/host-linux-x64/reports/cuda_api_sum.py]...
+Time (%),Total Time (ns),Num Calls,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+46.3,2088278,289,7225.9,7320.0,4949,15607,1826.0,cudaLaunchKernelExC_v11060
+25.6,1154231,147,7851.9,7545.0,5012,85554,6817.1,cuLaunchKernelEx
+15.3,690575,88,7847.4,7895.0,4977,19903,2627.5,cudaLaunchKernel
+3.3,147395,14,10528.2,7278.0,4519,36008,9104.6,cudaMemcpyAsync
+2.5,111443,2,55721.5,55721.5,39566,71877,22847.3,cudaDeviceSynchronize
+1.5,68716,180,381.8,289.5,188,2249,290.7,cudaGetDriverEntryPointByVersion_v12050
+1.1,50418,290,173.9,135.0,58,5904,347.8,cuKernelGetAttribute
+1.1,48693,180,270.5,185.5,114,1656,234.4,cuTensorMapEncodeTiled
+0.9,41931,8,5241.4,4319.0,2924,14427,3780.2,cudaEventRecordWithFlags_v11010
+0.7,33007,8,4125.9,3118.0,2107,9705,2549.8,cudaEventQuery
+0.7,31225,161,193.9,165.0,74,1082,109.3,cuKernelGetName
+0.6,27720,2,13860.0,13860.0,10023,17697,5426.3,cudaMemsetAsync
+0.3,14550,21,692.9,488.0,375,4187,824.7,cudaStreamIsCapturing_v10000
+0.1,5380,1,5380.0,5380.0,5380,5380,0.0,cuProfilerStart

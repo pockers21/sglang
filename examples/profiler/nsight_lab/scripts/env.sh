@@ -23,6 +23,25 @@ fi
 export LAB_ROOT SGLANG_REPO_ROOT
 export PYTHONPATH="$SGLANG_REPO_ROOT/python${PYTHONPATH:+:$PYTHONPATH}"
 
+# Some CUDA 13 Python wheels ship runtime libraries outside the default loader
+# path. Add those wheel libraries without replacing the host driver library.
+ACTIVE_VENV="${VIRTUAL_ENV:-${VENV_PATH:-}}"
+if [[ -n "$ACTIVE_VENV" ]]; then
+  if [[ -z "${CUDA_PYTHON_LIB_DIR:-}" ]]; then
+    for candidate in "$ACTIVE_VENV"/lib/python*/site-packages/nvidia/cu*/lib; do
+      if [[ -d "$candidate" ]]; then
+        CUDA_PYTHON_LIB_DIR="$candidate"
+        break
+      fi
+    done
+  fi
+  if [[ -n "${CUDA_PYTHON_LIB_DIR:-}" && -d "$CUDA_PYTHON_LIB_DIR" ]]; then
+    export LD_LIBRARY_PATH="$CUDA_PYTHON_LIB_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  fi
+fi
+
+# Use this only when the host driver genuinely requires a CUDA compatibility
+# package. Pointing it at a stale libcuda can cause CUDA error 803.
 if [[ -n "${CUDA_COMPAT_DIR:-}" ]]; then
   export LD_LIBRARY_PATH="$CUDA_COMPAT_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 fi

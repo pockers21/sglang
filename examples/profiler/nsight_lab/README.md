@@ -18,13 +18,15 @@ tracked by Git.
 ## What To Read First
 
 ```text
+reports/006_qwen3_8b_cuda_graph_ab.md
 reports/005_clean_metrics_dashboard.md
 scripts/profile_stage_nsys.sh
 scripts/profile_kernel_ncu.sh
+scripts/run_full_study.sh
 python/sglang/benchmark/one_batch.py
 ```
 
-The current case study shows why capture boundaries matter:
+The case study shows why capture boundaries matter:
 
 1. Whole-process profiling included model loading, KV-cache initialization,
    warmup, and shutdown, which obscured steady-state inference behavior.
@@ -32,7 +34,8 @@ The current case study shows why capture boundaries matter:
    the Nsight Systems `cudaProfilerApi` capture range.
 3. The clean batch-1 decode trace contains many short kernels and visible
    launch/API overhead, while explicit CUDA memory operations are small.
-4. A useful next experiment is a controlled CUDA Graph on/off comparison.
+4. The complete runner performs an unprofiled CUDA Graph on/off A/B test,
+   followed by paired Nsight Systems captures that explain the timing result.
 
 ## Requirements
 
@@ -73,14 +76,61 @@ bash scripts/profile_stage_nsys.sh prefill /path/to/model
 The generated files are written under `results/` by default:
 
 ```text
-results/sglang-clean-decode-nsys/clean_decode.nsys-rep
-results/sglang-clean-decode-nsys/cuda_gpu_kern_sum.txt
-results/sglang-clean-decode-nsys/cuda_api_sum.txt
-results/sglang-clean-decode-nsys/cuda_gpu_mem_time_sum.txt
-results/sglang-clean-decode-nsys/cuda_kern_exec_trace_nvtx.txt
+results/decode-disabled/clean_decode.nsys-rep
+results/decode-disabled/cuda_gpu_kern_sum.txt
+results/decode-disabled/cuda_api_sum.txt
+results/decode-disabled/cuda_gpu_mem_time_sum.txt
+results/decode-disabled/cuda_kern_exec_trace_nvtx.txt
 ```
 
 Set `OUTPUT_ROOT` to place the generated files elsewhere.
+
+## Complete CUDA Graph Study
+
+Run the full workflow on an otherwise idle GPU:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 \
+VENV_PATH=/path/to/venv \
+SGLANG_REPO_ROOT=/path/to/sglang \
+NSYS=/path/to/nsys NCU=/path/to/ncu \
+STUDY_ROOT=/path/to/output/qwen3-8b-cuda-graph \
+REPEATS=5 WARMUP_RUNS=1 \
+INPUT_LEN=256 OUTPUT_LEN=128 \
+PROFILE_START_STEP=32 PROFILE_STEPS=16 \
+bash scripts/run_full_study.sh /path/to/model
+```
+
+The workflow deliberately separates measurement from diagnosis:
+
+1. `run_cuda_graph_ab.sh` runs unprofiled, interleaved `disabled` and `full`
+   decode trials. It reports the median, mean, standard deviation, throughput,
+   speedup, and latency reduction.
+2. `profile_stage_nsys.sh` captures representative prefill, eager decode, and
+   CUDA Graph decode windows. Profiler-instrumented latency is not used as the
+   performance result.
+3. `profile_kernel_ncu.sh` remains an optional targeted follow-up after a hot
+   kernel has been selected from the Nsight Systems evidence.
+
+The study directory contains:
+
+```text
+environment.txt
+configuration.txt
+ab/disabled.jsonl
+ab/full.jsonl
+ab/summary.json
+ab/summary.md
+nsys/prefill-disabled/
+nsys/decode-disabled/
+nsys/decode-full/
+nsys_summary.json
+nsys_summary.md
+```
+
+Each Nsight directory contains the binary report plus text and CSV exports for
+CUDA kernels and API calls. Keep the large binary reports outside Git; commit
+only compact, reviewed evidence needed by a written report.
 
 ## Kernel Deep Dive
 
@@ -112,20 +162,29 @@ The scripts accept configuration through environment variables:
 | `PROFILE_STEPS` | `8` | Number of decode steps to capture |
 | `CUDA_GRAPH_BACKEND_DECODE` | `disabled` | Decode CUDA Graph backend |
 | `CUDA_GRAPH_BACKEND_PREFILL` | `disabled` | Prefill CUDA Graph backend |
+| `CUDA_GRAPH_BS_DECODE` | `1` | Batch size captured by decode CUDA Graph |
+| `REPEATS` | `5` | Timed trials per A/B mode |
+| `WARMUP_RUNS` | `1` | Untimed process-level warmup pairs |
 | `VENV_PATH` | unset | Optional Python virtual environment |
 | `NSYS` | `nsys` from `PATH` | Nsight Systems executable |
 | `NCU` | `ncu` from `PATH` | Nsight Compute executable |
 | `OUTPUT_ROOT` | `results/` | Generated report directory |
+| `RUN_NAME` | stage and graph mode | Per-capture output directory name |
+| `STUDY_ROOT` | timestamped directory | Full-study output directory |
+| `CUDA_PYTHON_LIB_DIR` | auto-detected | CUDA wheel runtime library directory |
 
 ## Reports
 
-The reports record one H200/Qwen2-style 3B model investigation. The measured
-numbers are evidence for that environment, not universal SGLang performance
-claims. Re-run the scripts on the target hardware before drawing conclusions.
+The historical reports record one H200/Qwen2-style 3B model investigation.
+Measured numbers are evidence for that environment, not universal SGLang
+performance claims. Re-run the complete workflow on the target model, SGLang
+revision, CUDA stack, and otherwise idle hardware before drawing conclusions.
 
-The central result is in `reports/005_clean_metrics_dashboard.md`. It separates
-GPU kernel time, explicit memory-operation time, and CPU-side CUDA API time,
-then identifies a CUDA Graph comparison as the next falsifiable experiment.
+The latest result is in `reports/006_qwen3_8b_cuda_graph_ab.md`. It closes the
+experiment proposed by `reports/005_clean_metrics_dashboard.md`: CUDA Graph
+replay cuts batch-1 decode latency while leaving the amount of GPU kernel work
+nearly unchanged, because thousands of ordinary host launch calls are folded
+into one graph replay per decode step.
 
 ## Profiling Method
 

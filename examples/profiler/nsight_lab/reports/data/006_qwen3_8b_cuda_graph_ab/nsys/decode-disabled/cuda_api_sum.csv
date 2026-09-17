@@ -1,0 +1,14 @@
+Generating SQLite file $STUDY_ROOT/nsys/decode-disabled/clean_decode.sqlite from $STUDY_ROOT/nsys/decode-disabled/clean_decode.nsys-rep
+Processing [$STUDY_ROOT/nsys/decode-disabled/clean_decode.sqlite] with [$TOOL_ROOT/nsight-systems-2024.6.2/host-linux-x64/reports/cuda_api_sum.py]...
+Time (%),Total Time (ns),Num Calls,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+47.4,20139841,4640,4340.5,4228.0,3217,23843,857.4,cudaLaunchKernelExC_v11060
+24.4,10385217,2320,4476.4,4274.0,3436,12715,781.4,cuLaunchKernelEx
+15.6,6612201,1408,4696.2,4814.5,3068,50227,2178.1,cudaLaunchKernel
+6.8,2872611,31,92664.9,111233.0,3231,195244,89152.0,cudaDeviceSynchronize
+1.5,640314,2880,222.3,140.0,128,1668,164.5,cudaGetDriverEntryPointByVersion_v12050
+1.2,518723,2880,180.1,87.0,76,1653,201.1,cuTensorMapEncodeTiled
+1.1,475809,32,14869.0,10837.0,8546,119010,19523.3,cudaMemcpyAsync
+0.8,359492,4640,77.5,73.0,39,494,27.3,cuKernelGetAttribute
+0.6,242546,32,7579.6,7402.0,5275,15057,1924.0,cudaMemsetAsync
+0.6,238670,2576,92.7,85.0,46,1477,54.0,cuKernelGetName
+0.0,8480,1,8480.0,8480.0,8480,8480,0.0,cuProfilerStart

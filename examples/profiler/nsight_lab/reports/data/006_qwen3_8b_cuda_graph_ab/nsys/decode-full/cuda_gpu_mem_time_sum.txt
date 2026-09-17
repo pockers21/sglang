@@ -1,0 +1,9 @@
+Generating SQLite file $STUDY_ROOT/nsys/decode-full/clean_decode.sqlite from $STUDY_ROOT/nsys/decode-full/clean_decode.nsys-rep
+Processing [$STUDY_ROOT/nsys/decode-full/clean_decode.sqlite] with [$TOOL_ROOT/nsight-systems-2024.6.2/host-linux-x64/reports/cuda_gpu_mem_time_sum.py]...
+
+ ** CUDA GPU MemOps Summary (by Time) (cuda_gpu_mem_time_sum):
+
+ Time (%)  Total Time (ns)  Count  Avg (ns)  Med (ns)  Min (ns)  Max (ns)  StdDev (ns)            Operation
+ --------  ---------------  -----  --------  --------  --------  --------  -----------  ------------------------------
+     55.6            32992     32    1031.0     992.0       960      1280         73.5  [CUDA memcpy Device-to-Device]
+     44.4            26368     32     824.0     832.0       736       896         74.0  [CUDA memset]

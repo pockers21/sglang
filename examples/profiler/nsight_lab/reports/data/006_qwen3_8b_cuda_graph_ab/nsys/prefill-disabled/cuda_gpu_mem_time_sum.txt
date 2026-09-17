@@ -1,0 +1,10 @@
+Generating SQLite file $STUDY_ROOT/nsys/prefill-disabled/clean_prefill.sqlite from $STUDY_ROOT/nsys/prefill-disabled/clean_prefill.nsys-rep
+Processing [$STUDY_ROOT/nsys/prefill-disabled/clean_prefill.sqlite] with [$TOOL_ROOT/nsight-systems-2024.6.2/host-linux-x64/reports/cuda_gpu_mem_time_sum.py]...
+
+ ** CUDA GPU MemOps Summary (by Time) (cuda_gpu_mem_time_sum):
+
+ Time (%)  Total Time (ns)  Count  Avg (ns)  Med (ns)  Min (ns)  Max (ns)  StdDev (ns)            Operation
+ --------  ---------------  -----  --------  --------  --------  --------  -----------  ------------------------------
+     81.8            10464     13     804.9     800.0       736       896         48.6  [CUDA memcpy Host-to-Device]
+     11.8             1504      2     752.0     752.0       736       768         22.6  [CUDA memset]
+      6.5              832      1     832.0     832.0       832       832          0.0  [CUDA memcpy Device-to-Device]

@@ -7,6 +7,8 @@ perfetto-traces/
 *.qdstrm
 *.sqlite
 *.jsonl
+!reports/data/**/*.jsonl
+!reports/data/**/*.csv
 
 # Local environments and tool installations
 .venv/
